@@ -12,8 +12,13 @@
 // Custom definitions may go here
 
 // Include common definitions from above.
+plugins {
+    id 'com.google.devtools.ksp' version '1.7.20-1.0.7'
+}
+
 apply from: '../build.common.gradle'
 apply from: '../build.dependencies.gradle'
+apply plugin: 'kotlin-android'
 
 android {
     namespace = 'org.firstinspires.ftc.teamcode'
@@ -22,4 +27,9 @@ android {
 dependencies {
     implementation project(':FtcRobotController')
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
+    ksp 'com.github.amarcolini.joos:annotation:master-SNAPSHOT'
 }
+
+//configurations.all {
+//    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+//}
