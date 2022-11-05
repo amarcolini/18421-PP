@@ -15,8 +15,8 @@ class ItsDrivinTime : CommandOpMode() {
     override fun preInit() {
         val drive = MecanumDrive(
             MotorGroup(hardwareMap, Motor.Kind.GOBILDA_312,
-                "front_left" to false,
-                "back_left" to false,
+                "front_left" to true,
+                "back_left" to true,
                 "back_right" to false,
                 "front_right" to false
             ), Imu(hardwareMap, "imu"),
@@ -31,7 +31,7 @@ class ItsDrivinTime : CommandOpMode() {
         )
         register(drive)
 
-        map({ gamepad.p1.leftStickChanged || gamepad.p1.rightStickChanged }, {
+        schedule({
             val leftStick = gamepad.p1.getLeftStick()
             drive.setWeightedDrivePower(
                 Pose2d(
@@ -40,6 +40,6 @@ class ItsDrivinTime : CommandOpMode() {
                     -gamepad.p1.getRightStick().x
                 )
             )
-        })
+        }, true)
     }
 }

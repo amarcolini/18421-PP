@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.Bot
 
 @TeleOp(name = "Debug", group = "test")
-@JoosConfig
+@JoosConfig("Debug")
 class ItsDebugginTime : LinearOpMode() {
     private lateinit var robot: Bot
 
@@ -25,7 +25,7 @@ class ItsDebugginTime : LinearOpMode() {
                 field = value
             }
         var leftArmPosition = 0.0
-        var rightArmPosition = 0.0
+        var rightArmPosition = 1.0
         var armPosition = 0.0
             set(value) {
                 leftArmPosition = value
