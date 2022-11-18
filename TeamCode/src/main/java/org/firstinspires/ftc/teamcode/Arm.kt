@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode
 import com.amarcolini.joos.command.AbstractComponent
 import com.amarcolini.joos.command.Command
 import com.amarcolini.joos.command.InstantCommand
+import com.amarcolini.joos.command.WaitCommand
 import com.amarcolini.joos.dashboard.JoosConfig
 import com.amarcolini.joos.geometry.Angle
 import com.amarcolini.joos.hardware.Servo
@@ -17,9 +18,8 @@ class Arm(hMap: HardwareMap) : AbstractComponent() {
     companion object {
         //0 is down, 1 is up, 0.23 is rest down (69 degrees)
         var rest = 69.deg
-        var down = 0.deg
-        var out = 250.deg
-        var outDown = 270.deg
+        var down = 10.deg
+        var out = 300.deg
     }
 
     init {
@@ -27,8 +27,11 @@ class Arm(hMap: HardwareMap) : AbstractComponent() {
         subcomponents += listOf(leftServo, rightServo)
     }
 
-    fun goToAngle(angle: Angle): Command = (leftServo.goToAngle(angle, 70.0) and rightServo.goToAngle(angle,70.0))
-        .setInterruptable(false)
+    fun goToAngle(angle: Angle): Command = WaitCommand(1.0)
+        .onInit {
+            leftServo.angle = angle
+            rightServo.angle = angle
+        }
         .requires(this)
 
     fun rest() = goToAngle(rest)
@@ -36,6 +39,4 @@ class Arm(hMap: HardwareMap) : AbstractComponent() {
     fun down() = goToAngle(down)
 
     fun out() = goToAngle(out)
-
-    fun outDown() = goToAngle(outDown)
 }

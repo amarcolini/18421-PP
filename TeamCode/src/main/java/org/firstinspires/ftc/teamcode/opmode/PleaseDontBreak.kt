@@ -20,7 +20,7 @@ class PleaseDontBreak : CommandOpMode() {
     private var initialized = false
     override fun preInit() {
         lift = Lift(hardwareMap)
-        lift.controller.pid = coefficients
+        lift.positionController.pid = coefficients
         register(lift)
 
         map(gamepad.p1.a::isActive, {
@@ -31,12 +31,13 @@ class PleaseDontBreak : CommandOpMode() {
     }
 
     override fun preStart() {
+        lift.positionControlEnabled = true
         schedule({
-            lift.controller.targetPosition = target.toDouble()
-            lift.controller.pid = coefficients
+            lift.positionController.targetPosition = target.toDouble()
+            lift.positionController.pid = coefficients
             CommandScheduler.telemetry.addLine("working...")
-            CommandScheduler.telemetry.addData("coefficients", lift.controller.pid)
-                .addData("target", lift.controller.targetPosition)
+            CommandScheduler.telemetry.addData("coefficients", lift.positionController.pid)
+                .addData("target", lift.positionController.targetPosition)
                 .addData("measured", lift.getPosition())
                 .addData("initialized", initialized)
         }, true)

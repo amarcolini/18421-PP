@@ -1,9 +1,6 @@
 repositories {
     mavenCentral()
     google() // Needed for androidx
-//    maven { url = 'https://jitpack.io' }
-    maven { url = uri("C:/Users/Alessandro/IdeaProjects/joos/testRepo")}
-    maven { url = 'https://maven.brott.dev/' }
     flatDir {
         dirs rootProject.file('libs')
     }
@@ -21,8 +18,5 @@ dependencies {
     implementation 'org.tensorflow:tensorflow-lite-task-vision:0.2.0'
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'org.firstinspires.ftc:gameAssets-PowerPlay:1.0.0'
-
-//    implementation 'com.github.amarcolini.joos:command:master-SNAPSHOT'
-    implementation 'com.amarcolini.joos:command:0.4.9'
 }
 

@@ -9,26 +9,12 @@ import com.amarcolini.joos.hardware.drive.MecanumDrive
 import com.amarcolini.joos.trajectory.constraints.MecanumConstraints
 import com.amarcolini.joos.util.deg
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import org.firstinspires.ftc.teamcode.TestDrive
 
 @TeleOp(name = "DriveTest", group = "test")
 class ItsDrivinTime : CommandOpMode() {
     override fun preInit() {
-        val drive = MecanumDrive(
-            MotorGroup(hardwareMap, Motor.Kind.GOBILDA_312,
-                "front_left" to true,
-                "back_left" to true,
-                "back_right" to false,
-                "front_right" to false
-            ), Imu(hardwareMap, "imu"),
-            MecanumConstraints(
-                trackWidth = 12.0,
-                lateralMultiplier = 1.0,
-                maxVel = 60.0,
-                maxAccel = 30.0,
-                maxAngVel = 180.deg,
-                maxAngAccel = 180.deg
-            )
-        )
+        val drive = TestDrive(hardwareMap)
         register(drive)
 
         schedule({
