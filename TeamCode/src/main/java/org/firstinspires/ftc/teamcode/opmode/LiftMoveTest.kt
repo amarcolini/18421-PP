@@ -3,10 +3,12 @@ package org.firstinspires.ftc.teamcode.opmode
 import com.amarcolini.joos.command.CommandOpMode
 import com.amarcolini.joos.dashboard.JoosConfig
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import org.firstinspires.ftc.teamcode.Lift
 
 @Autonomous(name = "LiftMoveTest", group = "test")
 @JoosConfig
+@Disabled
 class LiftMoveTest : CommandOpMode() {
     private lateinit var lift: Lift
 

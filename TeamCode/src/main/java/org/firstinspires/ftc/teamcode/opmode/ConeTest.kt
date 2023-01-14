@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opmode
 
 import com.amarcolini.joos.dashboard.JoosConfig
 import com.qualcomm.hardware.rev.RevColorSensorV3
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.robotcore.external.Telemetry
@@ -10,6 +11,7 @@ import org.firstinspires.ftc.robotcore.internal.opmode.TelemetryImpl
 
 @TeleOp(group = "test")
 @JoosConfig
+@Disabled
 class ConeTest : OpMode() {
     private lateinit var conePeeper: RevColorSensorV3
 

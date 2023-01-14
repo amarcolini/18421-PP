@@ -4,6 +4,7 @@ import com.amarcolini.joos.command.*
 import com.amarcolini.joos.geometry.Pose2d
 import com.amarcolini.joos.util.deg
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
 import org.firstinspires.ftc.teamcode.AprilTagPipeline
 import org.firstinspires.ftc.teamcode.Bot
@@ -13,7 +14,8 @@ import org.openftc.easyopencv.OpenCvCameraFactory
 import org.openftc.easyopencv.OpenCvCameraRotation
 
 
-@Autonomous()
+@Autonomous
+@Disabled
 class ProofOfAuto : CommandOpMode() {
     private lateinit var robot: Bot
 
@@ -25,9 +27,7 @@ class ProofOfAuto : CommandOpMode() {
         schedule(
             SequentialCommand(
                 true,
-            robot.arm.down() and robot.intake::slurp,
-                WaitCommand(0.2),
-                InstantCommand(robot.intake::stop)
+            robot.arm.down() and robot.intake::close
             )
         )
         schedule({
@@ -50,7 +50,7 @@ class ProofOfAuto : CommandOpMode() {
                 ),
                 Command.select { robot.lift.goToPosition(Lift.highJunction) },
                 robot.arm.goToAngle(250.deg) and WaitCommand(2.0),
-                robot.intake.eject(),
+                InstantCommand(robot.intake::open),
                 robot.arm.rest() and Command.select { robot.lift.goToPosition(0) }
             )
         )

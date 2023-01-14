@@ -35,9 +35,12 @@ dependencies {
 //    ksp 'com.github.amarcolini.joos:annotation:master-SNAPSHOT'
     ksp 'com.amarcolini.joos.command:annotation:0.4.9'
 //    implementation 'com.github.amarcolini.joos:command:master-SNAPSHOT'
-    implementation 'com.amarcolini.joos:command:0.4.9'
-    implementation 'org.openftc:easyopencv:1.5.2'
-    implementation 'org.openftc:apriltag:1.1.0'
+    implementation('com.amarcolini.joos:command:0.4.9') {
+        exclude group: 'com.acmerobotics.dashboard'
+    }
+    implementation 'com.acmerobotics.dashboard:dashboard:0.4.8'
+    implementation 'org.openftc:easyopencv:1.5.3'
+    implementation 'org.openftc:apriltag:1.1.1'
 }
 
 configurations.all {

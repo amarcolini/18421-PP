@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode
 
+import com.acmerobotics.dashboard.config.Config
 import com.amarcolini.joos.command.AbstractComponent
 import com.amarcolini.joos.command.Command
 import com.amarcolini.joos.command.InstantCommand
@@ -10,27 +11,26 @@ import com.amarcolini.joos.hardware.Servo
 import com.amarcolini.joos.util.deg
 import com.qualcomm.robotcore.hardware.HardwareMap
 
-@JoosConfig
+@Config
 class Arm(hMap: HardwareMap) : AbstractComponent() {
-    private val leftServo = Servo(hMap, "left_arm", 300.deg)
-    private val rightServo = Servo(hMap, "right_arm", 300.deg)
+    private val servo = Servo(hMap, "right_arm", 270.deg)
 
     companion object {
         //0 is down, 1 is up, 0.23 is rest down (69 degrees)
-        var rest = 69.deg
-        var down = 10.deg
-        var out = 300.deg
+        @JvmField var rest = 30.deg
+        @JvmField var down = 0.deg
+        @JvmField var out = 210.deg
+        @JvmField var outDown = 260.deg
     }
 
     init {
-        rightServo.reversed = true
-        subcomponents += listOf(leftServo, rightServo)
+        servo.reversed = true
+        subcomponents += servo
     }
 
     fun goToAngle(angle: Angle): Command = WaitCommand(1.0)
         .onInit {
-            leftServo.angle = angle
-            rightServo.angle = angle
+            servo.angle = angle
         }
         .requires(this)
 
@@ -39,4 +39,6 @@ class Arm(hMap: HardwareMap) : AbstractComponent() {
     fun down() = goToAngle(down)
 
     fun out() = goToAngle(out)
+
+    fun outDown() = goToAngle(outDown)
 }

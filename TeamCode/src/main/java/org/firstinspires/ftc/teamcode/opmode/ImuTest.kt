@@ -4,12 +4,14 @@ import com.amarcolini.joos.command.CommandOpMode
 import com.amarcolini.joos.hardware.Imu
 import com.amarcolini.joos.util.rad
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder
 import kotlin.math.abs
 import kotlin.math.sign
 
-@Autonomous
+@Autonomous(group = "test")
+@Disabled
 class ImuTest : CommandOpMode() {
     override fun preInit() {
         val imu = Imu(hardwareMap, "imu")

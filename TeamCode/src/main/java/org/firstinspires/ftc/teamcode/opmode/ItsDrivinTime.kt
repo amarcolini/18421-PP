@@ -8,10 +8,12 @@ import com.amarcolini.joos.hardware.MotorGroup
 import com.amarcolini.joos.hardware.drive.MecanumDrive
 import com.amarcolini.joos.trajectory.constraints.MecanumConstraints
 import com.amarcolini.joos.util.deg
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.TestDrive
 
 @TeleOp(name = "DriveTest", group = "test")
+@Disabled
 class ItsDrivinTime : CommandOpMode() {
     override fun preInit() {
         val drive = TestDrive(hardwareMap)

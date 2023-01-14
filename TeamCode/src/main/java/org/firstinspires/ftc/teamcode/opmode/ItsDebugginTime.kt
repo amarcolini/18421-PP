@@ -6,12 +6,14 @@ import com.amarcolini.joos.hardware.CRServo
 import com.amarcolini.joos.hardware.Motor
 import com.amarcolini.joos.hardware.Servo
 import com.qualcomm.hardware.rev.RevTouchSensor
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.Bot
 
 @TeleOp(name = "Debug", group = "test")
 @JoosConfig("Debug")
+@Disabled
 class ItsDebugginTime : LinearOpMode() {
     private lateinit var robot: Bot
 

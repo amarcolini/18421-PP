@@ -4,11 +4,13 @@ import com.amarcolini.joos.command.CommandOpMode
 import com.amarcolini.joos.command.CommandScheduler
 import com.amarcolini.joos.control.PIDCoefficients
 import com.amarcolini.joos.dashboard.JoosConfig
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.Lift
 
 @TeleOp(name = "LiftTest", group = "test")
 @JoosConfig
+@Disabled
 class PleaseDontBreak : CommandOpMode() {
     private lateinit var lift: Lift
 

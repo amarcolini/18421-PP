@@ -7,10 +7,12 @@ import com.amarcolini.joos.hardware.MotorGroup
 import com.amarcolini.joos.hardware.drive.MecanumDrive
 import com.amarcolini.joos.trajectory.constraints.MecanumConstraints
 import com.amarcolini.joos.util.deg
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 
 @TeleOp(name = "PushTest", group = "test")
+@Disabled
 class ItsPushinTime : LinearOpMode() {
     override fun runOpMode() {
         val drive = MecanumDrive(

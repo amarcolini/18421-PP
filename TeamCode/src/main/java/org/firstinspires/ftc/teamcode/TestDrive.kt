@@ -37,9 +37,9 @@ class TestDrive(private val hMap: HardwareMap) : AbstractMecanumDrive(
     private val backRight = hMap.get(DcMotorEx::class.java, "back_right")
 
     companion object {
-        val axialCoeffs = PIDCoefficients(3.0, 0.0, 0.005)
-        val lateralCoeffs = PIDCoefficients(3.0, 0.0, 0.005)
-        val headingCoeffs = PIDCoefficients(3.0, 0.0, 0.005)
+        val axialCoeffs = PIDCoefficients(4.0, 0.0, 0.005)
+        val lateralCoeffs = PIDCoefficients(4.0, 0.0, 0.005)
+        val headingCoeffs = PIDCoefficients(4.0, 0.0, 0.005)
     }
 
     init {
@@ -131,11 +131,38 @@ class TestDrive(private val hMap: HardwareMap) : AbstractMecanumDrive(
     fun followTrajectory(trajectory: Trajectory): Command = FunctionalCommand(
         init = { trajectoryFollower.followTrajectory(trajectory) },
         execute = { setDriveSignal(trajectoryFollower.update(poseEstimate, poseVelocity)) },
-        end = { setDriveSignal(DriveSignal()) },
+        end = {
+            setDriveSignal(DriveSignal())
+            lastTarget = trajectory.end()
+              },
         isFinished = { !trajectoryFollower.isFollowing() },
         isInterruptable = true,
         requirements = setOf(this)
     )
+
+    fun followTrajectory(startPose: Pose2d, startTangent: Angle, trajectory: TrajectoryBuilder.() -> Trajectory): Command = Command.select {
+        followTrajectory(builder(startPose, startTangent).trajectory())
+    }
+
+    fun followTrajectory(startPose: Pose2d = poseEstimate, trajectory: TrajectoryBuilder.() -> Trajectory): Command = Command.select {
+        followTrajectory(builder(startPose).trajectory())
+    }
+
+    var lastTarget: Pose2d? = null
+    fun followFromLast(trajectory: TrajectoryBuilder.(Pose2d) -> Trajectory): Command = Command.select {
+        val pose = lastTarget ?: poseEstimate
+        followTrajectory(builder(pose).trajectory(pose))
+    }
+
+    fun followFromLast(startTangent: Angle, trajectory: TrajectoryBuilder.(Pose2d) -> Trajectory): Command = Command.select {
+        val pose = lastTarget ?: poseEstimate
+        followTrajectory(builder(pose, startTangent).trajectory(pose))
+    }
+
+    fun followFromLast(reversed: Boolean, trajectory: TrajectoryBuilder.(Pose2d) -> Trajectory): Command = Command.select {
+        val pose = lastTarget ?: poseEstimate
+        followTrajectory(builder(pose, reversed).trajectory(pose))
+    }
 
     fun builder(startPose: Pose2d, startTangent: Angle = startPose.heading) = TrajectoryBuilder(
         startPose, startTangent, velConstraint, accelConstraint,
