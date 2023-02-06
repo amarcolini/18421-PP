@@ -17,13 +17,19 @@ class JustPark : CommandOpMode() {
 
     private lateinit var camera: OpenCvCamera
     private lateinit var pipeline: AprilTagPipeline
+    private var tagId = 2
 
     override fun preInit() {
         robot = registerRobot(Bot())
         robot.drive.initializeIMU()
         robot.drive.poseEstimate = Pose2d()
 
-        camera = OpenCvCameraFactory.getInstance().createInternalCamera2(OpenCvInternalCamera2.CameraDirection.BACK)
+        val cameraMonitorViewId = hardwareMap.appContext.resources.getIdentifier(
+            "cameraMonitorViewId",
+            "id",
+            hardwareMap.appContext.packageName
+        )
+        camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName::class.java, "webcam"))
         camera.setViewportRenderer(OpenCvCamera.ViewportRenderer.GPU_ACCELERATED)
 
         pipeline = AprilTagPipeline()
@@ -37,21 +43,26 @@ class JustPark : CommandOpMode() {
         })
 
         schedule(robot.arm.rest() and robot.intake::close)
-        schedule({
-            if (requiring(robot.lift) == null) telem.addLine("ready!")
-        }, true)
+        schedule(true) {
+            if (requiring(robot.lift) == null) telemetry.addLine("ready!")
+            val id =  pipeline.latestDetections.getOrNull(0)?.id
+            telemetry.addData("tag id", id)
+            if (id != null) tagId = id
+            telemetry.update()
+        }
+        initLoop = true
     }
 
     override fun preStart() {
         cancelAll()
         robot.drive.poseEstimate = Pose2d()
-        val detections = pipeline.latestDetections
+        camera.pauseViewport()
         camera.closeCameraDeviceAsync {}
 
-        val strafeDistance = when (detections.firstOrNull()?.id) {
+        val strafeDistance = when (tagId) {
             0 -> 24.0
-            2 -> 0.0
-            else -> -24.0
+            42 -> -24.0
+            else -> 0.0
         }
 
         robot.lift.positionControlEnabled = false

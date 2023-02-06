@@ -52,9 +52,9 @@ class ScoreLeft : CommandOpMode() {
                 robot.arm.rest()
             )
         )
-        schedule({
+        schedule(true) {
             if (requiring(robot.lift) == null) telem.addLine("ready!")
-        }, true)
+        }
     }
 
     override fun preStart() {
@@ -78,7 +78,7 @@ class ScoreLeft : CommandOpMode() {
                 robot.arm.rest() and robot.drive.followTrajectory {
                     forward(48.0)
                     build()
-                } and robot.lift.goToPosition(1165),
+                } and robot.lift.goToPosition(1165.0),
                 robot.drive.followFromLast {
                     turn((40).deg)
                     forward(2.0)
@@ -87,7 +87,7 @@ class ScoreLeft : CommandOpMode() {
                 WaitCommand(0.3),
                 InstantCommand(robot.intake::close),
                 WaitCommand(0.5) then robot.arm.rest(),
-                (Command.select { robot.lift.goToPosition(0) }) and
+                (Command.select { robot.lift.goToPosition(0.0) }) and
                         (WaitCommand(1.0) then robot.drive.followFromLast {
                             turn((-45).deg)
                             lineToLinearHeading(Pose2d(

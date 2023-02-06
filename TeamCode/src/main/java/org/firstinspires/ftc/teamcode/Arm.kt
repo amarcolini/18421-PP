@@ -11,16 +11,17 @@ import com.amarcolini.joos.hardware.Servo
 import com.amarcolini.joos.util.deg
 import com.qualcomm.robotcore.hardware.HardwareMap
 
-@Config
+@JoosConfig
 class Arm(hMap: HardwareMap) : AbstractComponent() {
-    private val servo = Servo(hMap, "right_arm", 270.deg)
+    val servo = Servo(hMap, "right_arm", 270.deg)
 
     companion object {
         //0 is down, 1 is up, 0.23 is rest down (69 degrees)
-        @JvmField var rest = 30.deg
-        @JvmField var down = 0.deg
-        @JvmField var out = 210.deg
-        @JvmField var outDown = 260.deg
+        var rest = 35.deg
+        var down = 0.deg
+        var out = 195.deg
+        var outDown = 265.deg
+        var outScore = 230.deg
     }
 
     init {
@@ -28,11 +29,11 @@ class Arm(hMap: HardwareMap) : AbstractComponent() {
         subcomponents += servo
     }
 
-    fun goToAngle(angle: Angle): Command = WaitCommand(1.0)
-        .onInit {
+    fun goToAngle(angle: Angle): Command = Command.select(this) {
+        WaitCommand((servo.angle - angle).abs().normDelta() / 60.deg * 0.2).onInit {
             servo.angle = angle
         }
-        .requires(this)
+    }
 
     fun rest() = goToAngle(rest)
 
@@ -41,4 +42,6 @@ class Arm(hMap: HardwareMap) : AbstractComponent() {
     fun out() = goToAngle(out)
 
     fun outDown() = goToAngle(outDown)
+
+    fun outScore() = goToAngle(outScore)
 }

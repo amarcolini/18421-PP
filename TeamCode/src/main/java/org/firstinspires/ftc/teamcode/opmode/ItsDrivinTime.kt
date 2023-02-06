@@ -19,7 +19,7 @@ class ItsDrivinTime : CommandOpMode() {
         val drive = TestDrive(hardwareMap)
         register(drive)
 
-        schedule({
+        schedule(true) {
             val leftStick = gamepad.p1.getLeftStick()
             drive.setWeightedDrivePower(
                 Pose2d(
@@ -28,6 +28,6 @@ class ItsDrivinTime : CommandOpMode() {
                     -gamepad.p1.getRightStick().x
                 )
             )
-        }, true)
+        }
     }
 }

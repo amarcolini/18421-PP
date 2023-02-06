@@ -13,7 +13,7 @@ class LiftMoveTest : CommandOpMode() {
     private lateinit var lift: Lift
 
     companion object {
-        var position = 800
+        var position = 800.0
         var maxVel = 600.0
         var accel = 300.0
         var decel = 100.0

@@ -17,16 +17,18 @@ class ImuTest : CommandOpMode() {
         val imu = Imu(hardwareMap, "imu")
         imu.autoDetectUpAxis()
 
-        schedule({
-            val heading = imu.imu.angularOrientation.toAngleUnit(AngleUnit.RADIANS).toAxesOrder(AxesOrder.XYZ)
+        schedule(true) {
+            val heading =
+                imu.imu.angularOrientation.toAngleUnit(AngleUnit.RADIANS).toAxesOrder(AxesOrder.XYZ)
             val gravity = imu.imu.gravity
-            val result = listOf(gravity.xAccel, gravity.yAccel, gravity.zAccel).zip(Imu.Axis.values())
+            val result =
+                listOf(gravity.xAccel, gravity.yAccel, gravity.zAccel).zip(Imu.Axis.values())
             val max = result.maxByOrNull { abs(it.first) }
             telem.addData("heading", imu.heading)
                 .addData("max", max ?: "null")
                 .addData("headingVelocity", imu.headingVelocity)
                 .addData("correctedZ", Math.toDegrees(heading.thirdAngle.toDouble()))
                 .addData("axis", imu.axis)
-        }, true)
+        }
     }
 }

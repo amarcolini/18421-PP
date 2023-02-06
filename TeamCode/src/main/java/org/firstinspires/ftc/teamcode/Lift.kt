@@ -12,9 +12,7 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.HardwareMap
-import kotlin.math.abs
-import kotlin.math.absoluteValue
-import kotlin.math.roundToInt
+import kotlin.math.*
 
 @JoosConfig
 class Lift(hMap: HardwareMap) : AbstractComponent() {
@@ -28,16 +26,19 @@ class Lift(hMap: HardwareMap) : AbstractComponent() {
     companion object {
         var initialized = false
             private set
-        val coeffs = PIDCoefficients(0.004, 0.0, 0.0004)
-        var fallPower = 0.01
-        var slowFallPower = 0.01
-        var kV = 0.001
-        private var leftPosition = 0
-        private var rightPosition = 0
+//        val coeffs = PIDCoefficients(0.006, 0.0, 0.0004)
+        val coeffs = PIDCoefficients(0.004)
+//        var kVup = 0.0007
+//        var kVdown = 0.0007
+//        var kAup = 0.0
+//        var kAdown = 0.0
+        var fallAccel = -4000.0
+        var slowTime = 0.4
+        var fallPower = 0.001
 
-        var lowJunction = 400
-        var mediumJunction = 700
-        var highJunction = 1050
+        @JvmField var lowJunction = 450.0
+        @JvmField var mediumJunction = 700.0
+        @JvmField var highJunction = 1200.0
     }
 
     val positionController: PIDFController = PIDFController(coeffs)
@@ -56,15 +57,22 @@ class Lift(hMap: HardwareMap) : AbstractComponent() {
     private val emergencySensor = hMap.get(RevTouchSensor::class.java, "emergency_toucher")
 
     var currentVelocity: Double? = null
-        private set
-
     override fun update() {
         if (positionControlEnabled) {
             val position = getPosition()
-            val output = positionController.update(position)
-            setPower(output + (currentVelocity?.let { it * kV } ?: 0.0))
-            CommandScheduler.telemetry.addData("lift target", positionController.targetPosition)
-            CommandScheduler.telemetry.addData("lift output", output)
+            val velocity = currentVelocity
+            val output = when {
+                velocity == null -> 0.21
+                velocity >= 0.0 -> velocity * 0.0006 + 0.21
+                velocity < 0.0 -> fallPower
+                else -> 0.21
+            } + positionController.update(position)
+            setPower(max(output, 0.0))
+//            telem.addData("lift target", positionController.targetPosition)
+//                .addData("lift actual", position)
+//                .addData("lift targetVel", currentVelocity ?: 0.0)
+//                .addData("lift actualVel", getVelocity())
+//                .addData("lift output", output)
         }
     }
 
@@ -88,53 +96,106 @@ class Lift(hMap: HardwareMap) : AbstractComponent() {
             positionControlEnabled = false
             leftMotor.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.FLOAT
             rightMotor.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.FLOAT
-            setPower(-0.03)
+            setPower(fallPower)
         },
         execute = {
             telem.addLine("resetting lift!!")
+            telem.addData("emergency sensor pressed", emergencySensor.isPressed)
             telem.addData("motor power", leftMotor.power)
         },
-        isFinished = emergencySensor::isPressed,
+        isFinished = { emergencySensor.isPressed },
         end = {
-            setPower(0.0)
-            leftMotor.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
-            rightMotor.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
-            resetEncoders()
+            setPower(-0.1)
             initialized = true
         },
         isInterruptable = false,
 //        requirements = setOf(this)
-    )
+    ) then WaitCommand(0.2).onEnd {
+        setPower(0.0)
+        resetEncoders()
+    }
 
-    fun goToPosition(position: Int, maxVel: Double = 700.0, accel: Double = 600.0) =
+    fun goToPosition(position: Double, maxVel: Double = 1200.0, accel: Double = 1000.0): Command =
         Command.select(this) {
-            if (position.toDouble() epsilonEquals getPosition()) return@select Command.emptyCommand()
-            val motionProfile = MotionProfileGenerator.generateSimpleMotionProfile(
-                MotionState(getPosition(), currentVelocity ?: getVelocity(), accel),
-                MotionState(position.toDouble(), 0.0, accel),
-                maxVel,
-                accel + 1.0
-            )
-            return@select TimeCommand { t, _ ->
-                val target = motionProfile[t]
-                CommandScheduler.telemetry.addData("target", target)
-                    .addData("current Position", getPosition())
-                    .addData("duration", motionProfile.duration())
-                positionController.targetPosition = target.x
-                currentVelocity = target.v
-                (t > motionProfile.duration() && positionController.isAtSetPoint())
-            }.onInit {
-                leftMotor.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
-                rightMotor.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
-                positionControlEnabled = true
-            }.onEnd {
-                currentVelocity = null
-                if (emergencySensor.isPressed) {
+            val actual = getPosition()
+            if (position epsilonEquals actual) return@select Command.emptyCommand()
+            val currentVel = currentVelocity ?: getVelocity()
+
+            if (position > actual) {
+                val motionProfile = MotionProfileGenerator.generateSimpleMotionProfile(
+                    MotionState(getPosition(), currentVel, accel),
+                    MotionState(position, 0.0, accel),
+                    maxVel,
+                    accel + 1.0
+                )
+                TimeCommand { t, _ ->
+                    val targetState = motionProfile[t]
+                    telem.addData("profile duration", motionProfile.duration())
+                    positionController.targetPosition = targetState.x
+                    currentVelocity = targetState.v
+                    (t > motionProfile.duration())
+                }.onInit {
+                    leftMotor.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.FLOAT
+                    rightMotor.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.FLOAT
+                    positionControlEnabled = true
+                }.onEnd {
+                    currentVelocity = null
+                    if (emergencySensor.isPressed) {
+                        positionControlEnabled = false
+                        setPower(0.0)
+                    }
+                }.setInterruptable(true).requires(this)
+            } else {
+                val root = sqrt(currentVel.pow(2) + 2 * fallAccel * (position - actual))
+                val fallTime = listOf(
+                    (-currentVel + root) / fallAccel,
+                    (-currentVel - root) / fallAccel
+                ).filter { it >= 0 }.maxOrNull()
+                if (fallTime == null || fallTime < slowTime) {
+                    val motionProfile = MotionProfileGenerator.generateSimpleMotionProfile(
+                        MotionState(getPosition(), currentVel, accel),
+                        MotionState(position, 0.0, accel),
+                        200.0,
+                        accel + 1.0
+                    )
+                    TimeCommand { t, _ ->
+                        val targetState = motionProfile[t]
+                        telem.addData("profile duration", motionProfile.duration())
+                        telem.addData("fallTime", fallTime)
+                        positionController.targetPosition = targetState.x
+                        currentVelocity = targetState.v
+                        (t > motionProfile.duration())
+                    }.onInit {
+                        leftMotor.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.FLOAT
+                        rightMotor.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.FLOAT
+                        positionControlEnabled = true
+                    }.onEnd {
+                        currentVelocity = null
+                        if (emergencySensor.isPressed) {
+                            positionControlEnabled = false
+                            setPower(0.0)
+                        }
+                    }.setInterruptable(true).requires(this)
+                } else TimeCommand { t, _ ->
+                    telem.addData("fall time", fallTime)
+                    setPower(if (t < fallTime - slowTime) 0.0 else 0.1)
+                    (t > fallTime || emergencySensor.isPressed)
+                }.onInit {
+                    leftMotor.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.FLOAT
+                    rightMotor.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.FLOAT
                     positionControlEnabled = false
-                    setPower(0.0)
-                }
-            }.setInterruptable(true).requires(this)
+                }.onEnd {
+                    currentVelocity = null
+                    if (emergencySensor.isPressed) {
+                        positionControlEnabled = false
+                        setPower(0.0)
+                    } else {
+                        positionControlEnabled = true
+                        positionController.targetPosition = position
+                    }
+                }.setInterruptable(true).requires(this)
+            }
         }
 
-    fun goToHeight(height: Double): Command = goToPosition((height * ticksPerInch).roundToInt())
+    fun goToHeight(height: Double): Command = goToPosition(height * ticksPerInch)
 }

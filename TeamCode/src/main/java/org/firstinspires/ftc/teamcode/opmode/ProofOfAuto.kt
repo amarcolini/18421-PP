@@ -30,9 +30,9 @@ class ProofOfAuto : CommandOpMode() {
             robot.arm.down() and robot.intake::close
             )
         )
-        schedule({
+        schedule(true) {
             if (requiring(robot.lift) == null) telem.addLine("ready!")
-        }, true)
+        }
     }
 
     override fun preStart() {
@@ -51,7 +51,7 @@ class ProofOfAuto : CommandOpMode() {
                 Command.select { robot.lift.goToPosition(Lift.highJunction) },
                 robot.arm.goToAngle(250.deg) and WaitCommand(2.0),
                 InstantCommand(robot.intake::open),
-                robot.arm.rest() and Command.select { robot.lift.goToPosition(0) }
+                robot.arm.rest() and Command.select { robot.lift.goToPosition(0.0) }
             )
         )
     }

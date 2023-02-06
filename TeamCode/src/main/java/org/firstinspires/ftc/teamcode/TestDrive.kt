@@ -13,6 +13,7 @@ import com.amarcolini.joos.followers.HolonomicPIDVAFollower
 import com.amarcolini.joos.geometry.Angle
 import com.amarcolini.joos.geometry.Pose2d
 import com.amarcolini.joos.hardware.Imu
+import com.amarcolini.joos.hardware.Motor
 import com.amarcolini.joos.localization.MecanumLocalizer
 import com.amarcolini.joos.trajectory.Trajectory
 import com.amarcolini.joos.trajectory.TrajectoryBuilder
@@ -52,6 +53,12 @@ class TestDrive(private val hMap: HardwareMap) : AbstractMecanumDrive(
 
         imu?.axis = Imu.Axis.Z
         imu?.reversed = false
+    }
+
+    fun setZeroPowerBehavior(zeroPowerBehavior: DcMotor.ZeroPowerBehavior) {
+        listOf(frontLeft, backLeft, frontRight, backRight).forEach {
+            it.zeroPowerBehavior = zeroPowerBehavior
+        }
     }
     
     private val inPerTick = (4 * PI * 0.94) / 537.7
@@ -108,22 +115,22 @@ class TestDrive(private val hMap: HardwareMap) : AbstractMecanumDrive(
 
     override fun update() {
         updatePoseEstimate()
-        CommandScheduler.telemetry.addData("pose", poseEstimate)
-            .addData("x", poseEstimate.x)
-            .addData("y", poseEstimate.y)
-            .addData("theta", poseEstimate.heading.radians)
-            .addData("targetX", 0.0)
-            .addData("targetY", 0.0)
-            .addData("targetTheta", 0.0)
+//        CommandScheduler.telemetry.addData("pose", poseEstimate)
+//            .addData("x", poseEstimate.x)
+//            .addData("y", poseEstimate.y)
+//            .addData("theta", poseEstimate.heading.radians)
+//            .addData("targetX", 0.0)
+//            .addData("targetY", 0.0)
+//            .addData("targetTheta", 0.0)
         if (trajectoryFollower.isFollowing()) {
             CommandScheduler.telemetry.drawSampledTrajectory(trajectoryFollower.trajectory)
             val target = trajectoryFollower.trajectory[trajectoryFollower.elapsedTime()]
             val targetVelocity = trajectoryFollower.trajectory.velocity(trajectoryFollower.elapsedTime())
             CommandScheduler.telemetry.drawRobot(target, "blue")
-            CommandScheduler.telemetry.addData("targetPose", target)
-                .addData("targetX", target.x)
-                .addData("targetY", target.y)
-                .addData("targetTheta", target.heading.radians)
+//            CommandScheduler.telemetry.addData("targetPose", target)
+//                .addData("targetX", target.x)
+//                .addData("targetY", target.y)
+//                .addData("targetTheta", target.heading.radians)
         }
         CommandScheduler.telemetry.drawRobot(poseEstimate, "red")
     }

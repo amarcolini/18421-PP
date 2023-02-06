@@ -34,7 +34,7 @@ class PleaseDontBreak : CommandOpMode() {
 
     override fun preStart() {
         lift.positionControlEnabled = true
-        schedule({
+        schedule(true) {
             lift.positionController.targetPosition = target.toDouble()
             lift.positionController.pid = coefficients
             CommandScheduler.telemetry.addLine("working...")
@@ -42,6 +42,6 @@ class PleaseDontBreak : CommandOpMode() {
                 .addData("target", lift.positionController.targetPosition)
                 .addData("measured", lift.getPosition())
                 .addData("initialized", initialized)
-        }, true)
+        }
     }
 }
